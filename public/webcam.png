@@ -1,0 +1,9 @@
+import { Webcam } from 'lucide-react';
+
+const App = () => {
+  return (
+    <Webcam />
+  );
+};
+
+export default App;
