@@ -1,12 +1,11 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation"; // ✅ Fixed missing import
+import { useRouter } from "next/navigation"; 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { MockInterview } from "../../../utils/schema";
 import { v4 as uuidv4 } from "uuid";
-
 import {
     Dialog,
     DialogContent,
@@ -34,7 +33,8 @@ function AddNewInterview() {
     const [currentDate, setCurrentDate] = useState("");
 
     useEffect(() => {
-        setCurrentDate(moment().format("YYYY-MM-DD HH:mm:ss")); // Fix for SSR mismatch
+        setCurrentDate(new Date());
+
     }, []);
 
     const onSubmit = async (event) => {
@@ -47,22 +47,34 @@ function AddNewInterview() {
             process.env.NEXT_PUBLIC_INTERVIEW_QUESTIONS_COUNT || "10";
         const InputPrompt = `Job position: ${jobPosition}, Job Description: ${jobDesc}, Years of Experience: ${jobExperience}. Generate ${questionCount} interview questions with answers in JSON format.`;
 
-        let MockJsonResp = ""; // ✅ Declare MockJsonResp outside of try/catch
+        let MockJsonResp = "";
 
         try {
             const result = await chatSession.sendMessage(InputPrompt);
             const responseText = await result.response.text();
-            MockJsonResp = responseText
-                .replace("```json", "")
-                .replace("```", "");
 
+            // ✅ Ensure valid JSON: Remove potential markdown and trim
+            MockJsonResp = responseText
+                .replace(/```json/g, "")
+                .replace(/```/g, "")
+                .trim();
+
+            console.log("Raw AI Response:", MockJsonResp);
+
+            // ✅ Validate JSON before parsing
+            if (!MockJsonResp.startsWith("{") && !MockJsonResp.startsWith("[")) {
+                throw new Error("Invalid JSON format received from AI.");
+            }
+
+            // ✅ Parse safely with error handling
             const parsedJson = JSON.parse(MockJsonResp);
             setJsonResponse(parsedJson);
-            console.log(parsedJson);
+            console.log("Parsed JSON:", parsedJson);
+
         } catch (error) {
-            console.error("Error fetching AI response:", error);
-            setJsonResponse([]); // ✅ Reset response in case of error
-            MockJsonResp = ""; // ✅ Ensure it's empty in case of failure
+            console.error("Error parsing AI JSON response:", error);
+            setJsonResponse([]);
+            MockJsonResp = ""; // Reset in case of error
         }
 
         if (MockJsonResp) {
@@ -76,13 +88,13 @@ function AddNewInterview() {
                         jobDesc: jobDesc,
                         jobExperience: jobExperience,
                         createdBy: user?.primaryEmailAddress?.emailAddress,
-                        createdAt: currentDate, // ✅ Fix: Uses client-generated date
+                        createdAt: currentDate,
                     })
                     .returning({ mockId: MockInterview.mockId });
 
                 console.log("Inserted ID:", resp);
-                if (resp) {
-                    setOpenDialog(false); // ✅ Close dialog only if insert is successful
+                if (resp.length > 0) {
+                    setOpenDialog(false);
                     router.push("/dashboard/interview/" + resp[0]?.mockId);
                 }
             } catch (dbError) {
