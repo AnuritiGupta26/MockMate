@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MOCK MATW
 
-## Getting Started
+![AI Interview Mocker](https://your-image-url.com) <!-- Optional: Add a banner or logo image -->
 
-First, run the development server:
+## 🚀 Overview
+MockMate,AI Interview Mocker is an intelligent, AI-powered platform designed to help candidates prepare for technical and behavioral interviews by simulating real-world interview scenarios. It provides feedback, ratings, and insights on answers to improve a candidate's performance.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## ✨ Features
+- **Real-Time AI-Powered Interviews**: Simulates both technical and HR interviews.
+- **Instant Feedback & Rating**: Provides a rating system and personalized feedback for each answer.
+- **Question Bank**: Contains various interview questions across different domains.
+- **Adaptive Questioning**: Dynamically adjusts question difficulty based on user responses.
+- **Data Visualization**: Tracks performance trends over multiple mock interviews.
+- **User Authentication**: Secure login and authentication using Clerk.
+- **Modern UI Components**: Uses ShadCN UI for a clean and aesthetic interface.
+
+## 🛠 Tech Stack
+- **Frontend**: Next.js, React, Tailwind CSS
+- **Backend**: Node.js, Express.js
+- **Database**: PostgreSQL (Drizzle ORM)
+- **AI Model**: Gemini API for AI-based responses
+- **Authentication**: Clerk for user authentication
+- **UI Library**: ShadCN UI for modern and reusable components
+- **Deployment**: Vercel / AWS
+
+
+## 📊 Usage
+1. Sign up or log in using Clerk authentication.
+2. Select the type of interview (technical/HR).
+3. Answer the AI-generated questions.
+4. Receive real-time feedback, a rating, and improvement suggestions powered by Gemini AI.
+5. Track your progress and enhance your skills!
+
+## 🛠 Deployment
+Deploy the application using **Vercel** or **AWS**:
+```sh
+vercel deploy
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 📜 License
+This project is licensed under the [MIT License](LICENSE).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📬 Contact
+- **Author**: Anuriti Gupta
+- **Email**: anuritigupta@example.com
+- **GitHub**: [github.com/anuriti-gupta](https://github.com/anuriti-gupta)
+- **LinkedIn**: [linkedin.com/in/anuriti-gupta](https://linkedin.com/in/anuriti-gupta)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
