@@ -1,6 +1,9 @@
 # MOCK MATE
 
-![AI Interview Mocker](https://your-image-url.com) <!-- Optional: Add a banner or logo image -->
+![Image](https://github.com/user-attachments/assets/7766ac76-ce80-4b88-b25e-7b4bbfc61552)
+
+
+![Image](https://github.com/user-attachments/assets/fb814667-86f1-4038-a9fd-17d67e286b84)
 
 ## 🚀 Overview
 MockMate,AI Interview Mocker is an intelligent, AI-powered platform designed to help candidates prepare for technical and behavioral interviews by simulating real-world interview scenarios. It provides feedback, ratings, and insights on answers to improve a candidate's performance.
