@@ -12,7 +12,7 @@ import { Camera } from "lucide-react";
 const Webcam = dynamic(() => import("react-webcam"), { ssr: false });
 
 const RecordAnswerSection = ({ mockInterviewQuestions, activeQuestionIndex, interviewData }) => {
-  const [userAnswer, setUserAnswer] = useState("");
+  const [userAnswer, setUserAnswer] = useState(""); // Stores full answer
   const { user } = useUser();
   const [userEmail, setUserEmail] = useState("");
   const [isRecording, setIsRecording] = useState(false);
@@ -32,33 +32,30 @@ const RecordAnswerSection = ({ mockInterviewQuestions, activeQuestionIndex, inte
       return;
     }
 
-    if (!recognitionRef.current) {
-      const recognition = new window.webkitSpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = false;
-      recognition.lang = "en-US";
+    const recognition = new window.webkitSpeechRecognition();
+    recognition.continuous = true; // Allows continuous speech input
+    recognition.interimResults = true;
+    recognition.lang = "en-US";
 
-      recognition.onresult = (event) => {
-        let finalTranscript = "";
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          finalTranscript += event.results[i][0].transcript;
-        }
-        setUserAnswer(finalTranscript);
-      };
+    recognition.onresult = (event) => {
+      let finalTranscript = userAnswer;
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        finalTranscript += event.results[i][0].transcript + " "; // Keeps appending words
+      }
+      setUserAnswer(finalTranscript.trim());
+    };
 
-      recognition.onerror = (event) => {
-        console.error("Speech Recognition Error:", event.error);
-        toast.error(`Error: ${event.error}`);
-      };
+    recognition.onerror = (event) => {
+      console.error("Speech Recognition Error:", event.error);
+      toast.error(`Error: ${event.error}`);
+    };
 
-      recognition.onend = () => {
-        setIsRecording(false);
-      };
+    recognition.onend = () => {
+      setIsRecording(false);
+    };
 
-      recognition.start();
-      recognitionRef.current = recognition;
-    }
-
+    recognition.start();
+    recognitionRef.current = recognition;
     setIsRecording(true);
   };
 
@@ -69,25 +66,24 @@ const RecordAnswerSection = ({ mockInterviewQuestions, activeQuestionIndex, inte
       setIsRecording(false);
     }
 
-    // Ensure the answer is saved properly
-    let finalUserAnswer = userAnswer.trim() === "" ? "No answer for this question" : userAnswer;
+    const finalUserAnswer = userAnswer.trim() || "No answer for this question";
 
     const userAnswerData = {
       mockId: interviewData?.mockId,
       question: mockInterviewQuestions[activeQuestionIndex]?.question || "Untitled Question",
       correctAns: mockInterviewQuestions[activeQuestionIndex]?.answer || "No correct answer provided",
-      userAns: finalUserAnswer,
+      userAns: finalUserAnswer, // Stores unlimited answer length
       feedback: "Pending AI feedback",
       rating: 0,
       userEmail: userEmail,
-      createdAt: moment().format("YYYY-MM-DD HH:mm:ss"), // Ensuring proper timestamp format
+      createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
     };
 
     try {
-      await db.insert(UserAnswer).values(userAnswerData).returning("*");
+      await db.insert(UserAnswer).values(userAnswerData);
       toast.success("User Answer recorded successfully!");
 
-      // Reset input and ensure the next question is fetched in the correct order
+      // Reset input for next question
       setUserAnswer("");
     } catch (error) {
       console.error("Database Error:", error);
@@ -118,6 +114,13 @@ const RecordAnswerSection = ({ mockInterviewQuestions, activeQuestionIndex, inte
       <h1 className="mt-4 text-lg font-bold text-gray-800">
         {isRecording ? "🎤 Recording in Progress..." : "Click to Start Recording"}
       </h1>
+
+      {userAnswer && (
+        <div className="mt-4 bg-white p-4 rounded-lg shadow-md w-3/4">
+          <h2 className="text-purple-600 font-semibold">Your Answer:</h2>
+          <p className="text-gray-800">{userAnswer}</p>
+        </div>
+      )}
     </div>
   );
 };
