@@ -71,7 +71,7 @@ function QuestionsSection({ mockInterviewQuestions, activeQuestionIndex }) {
             <strong>NOTE:</strong>
           </h2>
           <p className="text-md text-gray-800 mt-2">
-            Click on <strong>Record Answer</strong> when you want to answer the question. Be confident, speak clearly, and have a strong mindset.
+            Click on <strong>Record Answer</strong> and open the webcam when you want to answer the question.It is mandatory to answer all questions. Be clear, speak loudly, and stay calm.
           </p>
         </div>
       </div>

@@ -2,31 +2,37 @@
 
 import { db } from "@/utils/db";
 import { UserAnswer } from "@/utils/schema";
-import { eq } from "drizzle-orm";
+import { desc, limit } from "drizzle-orm";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Home } from "lucide-react";
+import { Home, ChevronsUpDown } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 
-import { ChevronsUpDown } from "lucide-react";
-
 function Feedback({ params }) {
   const [feedbackList, setFeedbackList] = useState([]);
   const router = useRouter();
 
   useEffect(() => {
-    GetAllFeedback();
+    GetRecentFeedback();
   }, []);
 
-  const GetAllFeedback = async () => {
+  const GetRecentFeedback = async () => {
     try {
-      const result = await db.select().from(UserAnswer).orderBy(UserAnswer.id);
-      console.log("All Feedback:", result);
-      setFeedbackList(result);
+      const result = await db
+        .select()
+        .from(UserAnswer)
+        .orderBy(desc(UserAnswer.id)) // Get the latest 10 entries first
+        .limit(10);
+
+      // Reverse the array to display in ascending order
+      const sortedResult = result.reverse();
+
+      console.log("Fetched Recent 10 Questions in Ascending Order:", sortedResult);
+      setFeedbackList(sortedResult);
     } catch (error) {
       console.error("Error fetching feedback:", error);
     }
