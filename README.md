@@ -1,4 +1,4 @@
-# MOCK MATW
+# MOCK MATE
 
 ![AI Interview Mocker](https://your-image-url.com) <!-- Optional: Add a banner or logo image -->
 
@@ -36,6 +36,7 @@ Deploy the application using **Vercel** or **AWS**:
 ```sh
 vercel deploy
 ```
+https://mock-mate-sigma.vercel.app/
 
 ## 📜 License
 This project is licensed under the [MIT License](LICENSE).
