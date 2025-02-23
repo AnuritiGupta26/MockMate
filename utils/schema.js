@@ -18,6 +18,6 @@ export const UserAnswer=pgTable('userAnswer',{
   correctAns:text('correctAns'),
   userAns:text('userAns'),
   feedback:text('feedback'),
-  rating:varchar('userEmail'),
+  rating: varchar("rating", { length: 10 }), 
   createdAt:varchar('createdAt'),
 });

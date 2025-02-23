@@ -33,14 +33,14 @@ const RecordAnswerSection = ({ mockInterviewQuestions, activeQuestionIndex, inte
     }
 
     const recognition = new window.webkitSpeechRecognition();
-    recognition.continuous = true; // Allows continuous speech input
-    recognition.interimResults = true;
+    recognition.continuous = true; // Keep listening continuously
+    recognition.interimResults = true; // Get real-time updates
     recognition.lang = "en-US";
 
     recognition.onresult = (event) => {
       let finalTranscript = userAnswer;
       for (let i = event.resultIndex; i < event.results.length; i++) {
-        finalTranscript += event.results[i][0].transcript + " "; // Keeps appending words
+        finalTranscript += event.results[i][0].transcript + " ";
       }
       setUserAnswer(finalTranscript.trim());
     };
@@ -51,12 +51,58 @@ const RecordAnswerSection = ({ mockInterviewQuestions, activeQuestionIndex, inte
     };
 
     recognition.onend = () => {
-      setIsRecording(false);
+      if (isRecording) {
+        recognition.start(); // Restart recognition if user hasn't stopped it
+      }
     };
 
     recognition.start();
     recognitionRef.current = recognition;
     setIsRecording(true);
+  };
+
+  const fetchAiFeedback = async (answer) => {
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${process.env.NEXT_PUBLIC_GEMINI_API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [
+              {
+                role: "user",
+                parts: [
+                  {
+                    text: `Evaluate the following interview answer:\n\nQuestion: ${mockInterviewQuestions[activeQuestionIndex]?.question}\nAnswer: ${answer}\n\nProvide constructive feedback first, then separately state "Rating: X/10".`,
+                  },
+                ],
+              },
+            ],
+          }),
+        }
+      );
+
+      const data = await response.json();
+      const aiResponse = data?.candidates?.[0]?.content?.parts?.[0]?.text || "No feedback available";
+
+      console.log("📝 AI Full Response:", aiResponse);
+
+      // Extract rating separately
+      const ratingMatch = aiResponse.match(/Rating:\s*(\d+)\/10/);
+      const rating = ratingMatch ? parseInt(ratingMatch[1], 10) : null;
+
+      // Remove rating part from feedback
+      const feedback = aiResponse.replace(/Rating:\s*\d+\/10/, "").trim();
+
+      console.log("📝 AI Feedback (Cleaned):", feedback);
+      console.log("⭐ AI Rating:", rating);
+
+      return { feedback, rating };
+    } catch (error) {
+      console.error("❌ Error fetching AI feedback:", error);
+      return { feedback: "AI feedback unavailable", rating: null };
+    }
   };
 
   const stopSpeechRecognition = async () => {
@@ -68,13 +114,20 @@ const RecordAnswerSection = ({ mockInterviewQuestions, activeQuestionIndex, inte
 
     const finalUserAnswer = userAnswer.trim() || "No answer for this question";
 
+    // Fetch AI-generated feedback & rating
+    const { feedback, rating } = await fetchAiFeedback(finalUserAnswer);
+
+    console.log("✅ Final Answer:", finalUserAnswer);
+    console.log("📝 AI Feedback:", feedback);
+    console.log("⭐ AI Rating:", rating);
+
     const userAnswerData = {
       mockId: interviewData?.mockId,
       question: mockInterviewQuestions[activeQuestionIndex]?.question || "Untitled Question",
       correctAns: mockInterviewQuestions[activeQuestionIndex]?.answer || "No correct answer provided",
-      userAns: finalUserAnswer, // Stores unlimited answer length
-      feedback: "Pending AI feedback",
-      rating: 0,
+      userAns: finalUserAnswer,
+      feedback: feedback, // ✅ Feedback stored separately
+      rating: rating ? rating.toString() : "N/A", // ✅ Rating stored separately
       userEmail: userEmail,
       createdAt: moment().format("YYYY-MM-DD HH:mm:ss"),
     };
@@ -82,11 +135,9 @@ const RecordAnswerSection = ({ mockInterviewQuestions, activeQuestionIndex, inte
     try {
       await db.insert(UserAnswer).values(userAnswerData);
       toast.success("User Answer recorded successfully!");
-
-      // Reset input for next question
-      setUserAnswer("");
+      console.log("📌 Saved to DB:", userAnswerData);
     } catch (error) {
-      console.error("Database Error:", error);
+      console.error("❌ Database Error:", error);
       toast.error("Failed to save answer. Try again.");
     }
   };

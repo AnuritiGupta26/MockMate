@@ -2,51 +2,55 @@
 
 import { db } from "@/utils/db";
 import { UserAnswer } from "@/utils/schema";
-import { asc, limit } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Home } from "lucide-react";
+import { useRouter } from "next/navigation"; // Import for navigation
+import { ChevronsUpDown, Home } from "lucide-react"; // Icons for UI
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 
-import { ChevronsUpDown } from "lucide-react";
-
 function Feedback({ params }) {
-  const [feedbackList, setFeedbackList] = useState([]);
   const router = useRouter();
+  const [feedback, setFeedback] = useState([]);
 
   useEffect(() => {
-    GetAllFeedback();
-  }, []);
+    const fetchFeedback = async () => {
+      try {
+        const resolvedParams = await params;
+        const interviewId = resolvedParams?.interviewId;
 
-  const GetAllFeedback = async () => {
-    try {
-      const result = await db
-        .select()
-        .from(UserAnswer)
-        .orderBy(asc(UserAnswer.id)) // Sort by oldest first
-        .limit(10); // Get last 10 records
+        if (!interviewId) {
+          console.error("Error: interviewId is missing");
+          return;
+        }
 
-      console.log("Last 10 Questions in Ascending Order:", result);
-      setFeedbackList(result);
-    } catch (error) {
-      console.error("Error fetching feedback:", error);
-    }
-  };
+        console.log("Fetching data for interviewId:", interviewId);
 
+        // Fetch feedback from NeonDB
+        const result = await db
+          .select()
+          .from(UserAnswer)
+          .where(eq(UserAnswer.mockId, interviewId))
+          .orderBy(UserAnswer.id);
+
+        setFeedback(result);
+        console.log("Fetched feedback:", result);
+      } catch (error) {
+        console.error("Error fetching feedback:", error);
+      }
+    };
+
+    fetchFeedback();
+  }, [params]);
+
+  // Function to calculate overall rating
   const calculateOverallRating = () => {
-    if (!feedbackList.length) return "N/A";
-
-    const ratings = feedbackList
-      .map((item) => parseFloat(item.rating))
-      .filter((num) => !isNaN(num));
-
-    if (!ratings.length) return "N/A";
-
-    return (ratings.reduce((sum, val) => sum + val, 0) / ratings.length).toFixed(1);
+    if (feedback.length === 0) return 0;
+    const totalRating = feedback.reduce((acc, item) => acc + (item.rating || 0), 0);
+    return (totalRating / feedback.length).toFixed(1);
   };
 
   return (
@@ -57,7 +61,7 @@ function Feedback({ params }) {
           Here is your Interview Feedback
         </h2>
 
-        {feedbackList.length === 0 ? (
+        {feedback.length === 0 ? (
           <h2 className="font-bold text-xl text-gray-500">
             No Interview Feedback Record Found
           </h2>
@@ -68,10 +72,10 @@ function Feedback({ params }) {
               <strong className="text-rose-500">{calculateOverallRating()}/10</strong>
             </h2>
             <h2 className="text-sm text-gray-500">
-              Below are the Interview Questions with Correct Answers, Your Answers, and Feedback for Improvement.
+              Below are the latest 10 Interview Questions with Correct Answers, Your Answers, and Feedback for Improvement.
             </h2>
 
-            {feedbackList.map((item, index) => (
+            {feedback.map((item, index) => (
               <Collapsible
                 key={index}
                 className="border border-purple-300 p-4 my-3 rounded-lg bg-[#D8BFD8] shadow-md"
